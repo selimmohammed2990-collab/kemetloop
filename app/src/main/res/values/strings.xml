@@ -1,0 +1,18 @@
+<resources>
+    <string name="app_name">KemetLoop</string>
+    <string name="tagline">سوق، سفر، ترجمة ذكية، ومواهب مصرية</string>
+    <string name="sign_in_google">تسجيل الدخول عبر Google</string>
+    <string name="continue_as_guest">الدخول كزائر / تصفح فوري</string>
+    <string name="nav_market">السوق</string>
+    <string name="nav_translate">المترجم</string>
+    <string name="nav_talents">المواهب</string>
+    <string name="nav_vip">الباقات</string>
+    <string name="vodafone_cash_local">01006256085</string>
+    <string name="vodafone_cash_intl">+201006256085</string>
+    <string name="developer_name">Selim Mohamed Selim</string>
+    <string name="developer_email">selimmmohammed@gmail.com</string>
+    <string name="developer_whatsapp_url">https://wa.me/201006256085</string>
+    <string name="admob_app_id_test">ca-app-pub-3940256099942544~3347511713</string>
+    <string name="admob_banner_id_test">ca-app-pub-3940256099942544/6300978111</string>
+    <string name="admob_rewarded_id_test">ca-app-pub-3940256099942544/5224354917</string>
+</resources>

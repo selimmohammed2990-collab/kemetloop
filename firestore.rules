@@ -1,0 +1,405 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isSignedIn() &&
+             'email_verified' in request.auth.token &&
+             request.auth.token.email_verified == true &&
+             'email' in request.auth.token &&
+             request.auth.token.email in ['selimmmohammed@gmail.com', 'selimmohammed2990@gmail.com'];
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidUserProfile(data) {
+      return data.userId is string &&
+             data.displayName is string && data.displayName.size() >= 1 && data.displayName.size() <= 80 &&
+             (!('email' in data) || (data.email is string && data.email.size() <= 120)) &&
+             data.plan in ['FREE_STARTER', 'PRO', 'BUSINESS_VIP'] &&
+             data.billingCycle in ['NONE', 'MONTHLY', 'YEARLY'] &&
+             data.coins is int && data.coins >= 0 && data.coins <= 10000000 &&
+             data.referralCode is string && data.referralCode.size() >= 4 && data.referralCode.size() <= 24 &&
+             (!('referredBy' in data) || (data.referredBy is string && data.referredBy.size() <= 24)) &&
+             (!('referralCount' in data) || (data.referralCount is int && data.referralCount >= 0 && data.referralCount <= 100000)) &&
+             (!('affiliateEarningsCoins' in data) || (data.affiliateEarningsCoins is int && data.affiliateEarningsCoins >= 0 && data.affiliateEarningsCoins <= 10000000)) &&
+             data.verifiedBusiness is bool &&
+             (!('dailyTranslationsUsed' in data) || (data.dailyTranslationsUsed is int && data.dailyTranslationsUsed >= 0 && data.dailyTranslationsUsed <= 10000)) &&
+             (!('quizWins' in data) || (data.quizWins is int && data.quizWins >= 0 && data.quizWins <= 100000)) &&
+             data.createdAt is timestamp && data.createdAt <= request.time &&
+             data.updatedAt is timestamp && data.updatedAt <= request.time;
+    }
+
+    function isValidSavedLink(data) {
+      return data.userId is string && data.userId == request.auth.uid &&
+             data.title is string && data.title.size() >= 1 && data.title.size() <= 80 &&
+             data.url is string && data.url.size() >= 4 && data.url.size() <= 300 &&
+             data.category in ['TRAVEL', 'SHOP', 'SOCIAL', 'OTHER'] &&
+             data.createdAt is timestamp && data.createdAt <= request.time &&
+             data.updatedAt is timestamp && data.updatedAt <= request.time;
+    }
+
+    function isValidVaultFile(data) {
+      return data.userId is string && data.userId == request.auth.uid &&
+             data.title is string && data.title.size() >= 1 && data.title.size() <= 100 &&
+             data.fileName is string && data.fileName.size() >= 1 && data.fileName.size() <= 160 &&
+             data.mimeType is string && data.mimeType.size() >= 1 && data.mimeType.size() <= 120 &&
+             data.category in ['TRAVEL_TICKETS', 'ID_DOCS', 'INVOICES_RECEIPTS', 'MEDIA_FILES'] &&
+             data.sizeBytes is int && data.sizeBytes >= 0 && data.sizeBytes <= 104857600 &&
+             (!('note' in data) || (data.note is string && data.note.size() <= 300)) &&
+             (!('inlineDataBase64' in data) || (data.inlineDataBase64 is string && data.inlineDataBase64.size() <= 750000)) &&
+             data.createdAt is timestamp && data.createdAt <= request.time &&
+             data.updatedAt is timestamp && data.updatedAt <= request.time;
+    }
+
+    function isValidPaymentSubmission(data) {
+      return data.userId is string &&
+             data.targetPlan in ['PRO', 'BUSINESS_VIP'] &&
+             data.billingCycle in ['MONTHLY', 'YEARLY'] &&
+             data.amountEgp is int && data.amountEgp > 0 && data.amountEgp <= 50000 &&
+             data.walletNumber is string && data.walletNumber == '01006256085' &&
+             data.senderWalletType in ['VODAFONE_CASH', 'ORANGE_CASH', 'ETISALAT_CASH', 'WE_PAY', 'INSTAPAY', 'EGYPT_BANK_APP', 'VISA_MASTERCARD', 'PAYPAL', 'PAYONEER', 'INTL_BANK_TRANSFER'] &&
+             (!('txReference' in data) || (data.txReference is string && data.txReference.size() <= 64)) &&
+             data.receiptSelected is bool &&
+             (!('receiptUriNote' in data) || (data.receiptUriNote is string && data.receiptUriNote.size() <= 300)) &&
+             data.status in ['CONFIRMED', 'PENDING', 'APPROVED', 'REJECTED'] &&
+             data.createdAt is timestamp && data.createdAt <= request.time &&
+             data.updatedAt is timestamp && data.updatedAt <= request.time;
+    }
+
+    function isValidVipRequest(data) {
+      return isValidPaymentSubmission(data) &&
+             data.userName is string && data.userName.size() >= 1 && data.userName.size() <= 80 &&
+             (!('userEmail' in data) || (data.userEmail is string && data.userEmail.size() <= 120));
+    }
+
+    function isValidAffiliateLog(data) {
+      return data.userId is string && data.userId == request.auth.uid &&
+             data.actionType in ['SHARE_OFFER', 'INVITE_FRIEND'] &&
+             data.referenceTitle is string && data.referenceTitle.size() >= 1 && data.referenceTitle.size() <= 100 &&
+             data.offerPriceEgp is int && data.offerPriceEgp >= 0 && data.offerPriceEgp <= 10000000 &&
+             data.platformCommissionEgp is int && data.platformCommissionEgp >= 0 && data.platformCommissionEgp <= 1000000 &&
+             data.earnedCoins is int && data.earnedCoins >= 0 && data.earnedCoins <= 1000 &&
+             data.createdAt is timestamp && data.createdAt <= request.time &&
+             data.updatedAt is timestamp && data.updatedAt <= request.time;
+    }
+
+    function isValidListing(data) {
+      return data.userId is string &&
+             data.sellerName is string && data.sellerName.size() >= 1 && data.sellerName.size() <= 60 &&
+             data.title is string && data.title.size() >= 2 && data.title.size() <= 100 &&
+             data.description is string && data.description.size() >= 2 && data.description.size() <= 500 &&
+             data.category in ['PRODUCT', 'TRIP', 'SERVICE'] &&
+             data.priceEgp is int && data.priceEgp >= 0 && data.priceEgp <= 10000000 &&
+             data.location is string && data.location.size() >= 1 && data.location.size() <= 80 &&
+             data.featured is bool &&
+             data.verifiedSeller is bool &&
+             (!('whatsappPhone' in data) || (data.whatsappPhone is string && data.whatsappPhone.size() <= 25)) &&
+             (!('socialUrl' in data) || (data.socialUrl is string && data.socialUrl.size() <= 250)) &&
+             data.status in ['ACTIVE', 'PAUSED'] &&
+             data.createdAt is timestamp && data.createdAt <= request.time &&
+             data.updatedAt is timestamp && data.updatedAt <= request.time;
+    }
+
+    function isValidListingReview(data) {
+      return data.listingId is string && data.listingId.size() >= 1 && data.listingId.size() <= 128 &&
+             data.userId is string && data.userId == request.auth.uid &&
+             data.reviewerName is string && data.reviewerName.size() >= 1 && data.reviewerName.size() <= 60 &&
+             data.rating is int && data.rating >= 1 && data.rating <= 5 &&
+             data.comment is string && data.comment.size() >= 1 && data.comment.size() <= 300 &&
+             data.createdAt is timestamp && data.createdAt <= request.time &&
+             data.updatedAt is timestamp && data.updatedAt <= request.time;
+    }
+
+    function isValidConciergeRequest(data) {
+      return data.userId is string && data.userId == request.auth.uid &&
+             data.requesterName is string && data.requesterName.size() >= 1 && data.requesterName.size() <= 60 &&
+             data.category in ['PRODUCT', 'TRIP', 'SERVICE'] &&
+             data.title is string && data.title.size() >= 2 && data.title.size() <= 100 &&
+             data.details is string && data.details.size() >= 2 && data.details.size() <= 500 &&
+             data.budgetEgp is int && data.budgetEgp >= 0 && data.budgetEgp <= 10000000 &&
+             data.city is string && data.city.size() >= 1 && data.city.size() <= 60 &&
+             data.status in ['OPEN', 'FULFILLED'] &&
+             data.createdAt is timestamp && data.createdAt <= request.time &&
+             data.updatedAt is timestamp && data.updatedAt <= request.time;
+    }
+
+    function isValidConciergeOffer(data, requestId) {
+      return data.requestId is string && data.requestId == requestId &&
+             data.requesterUid is string && data.requesterUid.size() >= 1 && data.requesterUid.size() <= 128 &&
+             data.merchantUserId is string && data.merchantUserId == request.auth.uid &&
+             data.merchantName is string && data.merchantName.size() >= 1 && data.merchantName.size() <= 60 &&
+             data.priceEgp is int && data.priceEgp >= 0 && data.priceEgp <= 10000000 &&
+             data.proposal is string && data.proposal.size() >= 2 && data.proposal.size() <= 400 &&
+             (!('whatsappPhone' in data) || (data.whatsappPhone is string && data.whatsappPhone.size() <= 25)) &&
+             data.createdAt is timestamp && data.createdAt <= request.time &&
+             data.updatedAt is timestamp && data.updatedAt <= request.time;
+    }
+
+    function isValidCoupon(data) {
+      return data.userId is string && data.userId == request.auth.uid &&
+             data.merchantName is string && data.merchantName.size() >= 1 && data.merchantName.size() <= 60 &&
+             data.code is string && data.code.size() >= 3 && data.code.size() <= 32 &&
+             data.title is string && data.title.size() >= 2 && data.title.size() <= 100 &&
+             data.discountPercent is int && data.discountPercent >= 1 && data.discountPercent <= 90 &&
+             data.city is string && data.city.size() >= 1 && data.city.size() <= 60 &&
+             data.status in ['ACTIVE', 'PAUSED'] &&
+             data.createdAt is timestamp && data.createdAt <= request.time &&
+             data.updatedAt is timestamp && data.updatedAt <= request.time;
+    }
+
+    function isValidTalent(data) {
+      return data.userId is string && data.userId == request.auth.uid &&
+             data.creatorName is string && data.creatorName.size() >= 1 && data.creatorName.size() <= 60 &&
+             data.talentTitle is string && data.talentTitle.size() >= 2 && data.talentTitle.size() <= 100 &&
+             data.category in ['MUSIC', 'ART', 'CRAFT', 'STORY', 'TECH'] &&
+             data.bio is string && data.bio.size() >= 2 && data.bio.size() <= 400 &&
+             data.youtubeUrl is string && data.youtubeUrl.size() >= 4 && data.youtubeUrl.size() <= 250 &&
+             (!('socialUrl' in data) || (data.socialUrl is string && data.socialUrl.size() <= 250)) &&
+             data.status in ['PUBLISHED', 'HIDDEN'] &&
+             data.createdAt is timestamp && data.createdAt <= request.time &&
+             data.updatedAt is timestamp && data.updatedAt <= request.time;
+    }
+
+    match /users/{userId} {
+      allow get, list: if isOwner(userId) || isAdmin();
+      allow create: if isOwner(userId) &&
+                       isValidId(userId) &&
+                       incoming().userId == request.auth.uid &&
+                       incoming().keys().hasAll(['userId', 'displayName', 'plan', 'billingCycle', 'coins', 'referralCode', 'verifiedBusiness', 'createdAt', 'updatedAt']) &&
+                       incoming().keys().hasOnly(['userId', 'displayName', 'email', 'plan', 'billingCycle', 'coins', 'referralCode', 'referredBy', 'referralCount', 'affiliateEarningsCoins', 'verifiedBusiness', 'dailyTranslationsUsed', 'quizWins', 'createdAt', 'updatedAt']) &&
+                       incoming().plan == 'FREE_STARTER' &&
+                       incoming().verifiedBusiness == false &&
+                       incoming().coins == 100 &&
+                       isValidUserProfile(incoming());
+      allow update: if isValidId(userId) &&
+                       isValidUserProfile(incoming()) &&
+                       incoming().userId == existing().userId &&
+                       incoming().referralCode == existing().referralCode &&
+                       incoming().createdAt == existing().createdAt &&
+                       (
+                         (isOwner(userId) &&
+                           incoming().diff(existing()).affectedKeys().hasOnly(['displayName', 'coins', 'referredBy', 'referralCount', 'affiliateEarningsCoins', 'dailyTranslationsUsed', 'quizWins', 'updatedAt'])) ||
+                         (isAdmin() &&
+                           incoming().diff(existing()).affectedKeys().hasOnly(['displayName', 'plan', 'billingCycle', 'coins', 'verifiedBusiness', 'updatedAt']))
+                       );
+      allow delete: if isOwner(userId) && isValidId(userId);
+
+      match /saved_links/{linkId} {
+        allow get: if isOwner(userId) && isValidId(linkId);
+        allow list: if isOwner(userId);
+        allow create: if isOwner(userId) &&
+                         isValidId(linkId) &&
+                         incoming().keys().hasAll(['userId', 'title', 'url', 'category', 'createdAt', 'updatedAt']) &&
+                         incoming().keys().hasOnly(['userId', 'title', 'url', 'category', 'createdAt', 'updatedAt']) &&
+                         isValidSavedLink(incoming());
+        allow update: if isOwner(userId) &&
+                         isValidId(linkId) &&
+                         isValidSavedLink(incoming()) &&
+                         incoming().userId == existing().userId &&
+                         incoming().createdAt == existing().createdAt &&
+                         incoming().diff(existing()).affectedKeys().hasOnly(['title', 'url', 'category', 'updatedAt']);
+        allow delete: if isOwner(userId) && isValidId(linkId);
+      }
+
+      match /vault_files/{fileId} {
+        allow get: if isOwner(userId) && isValidId(fileId);
+        allow list: if isOwner(userId);
+        allow create: if isOwner(userId) &&
+                         isValidId(fileId) &&
+                         incoming().keys().hasAll(['userId', 'title', 'fileName', 'mimeType', 'category', 'sizeBytes', 'createdAt', 'updatedAt']) &&
+                         incoming().keys().hasOnly(['userId', 'title', 'fileName', 'mimeType', 'category', 'sizeBytes', 'note', 'inlineDataBase64', 'createdAt', 'updatedAt']) &&
+                         isValidVaultFile(incoming());
+        allow update: if isOwner(userId) &&
+                         isValidId(fileId) &&
+                         isValidVaultFile(incoming()) &&
+                         incoming().userId == existing().userId &&
+                         incoming().createdAt == existing().createdAt &&
+                         incoming().diff(existing()).affectedKeys().hasOnly(['title', 'category', 'note', 'updatedAt']);
+        allow delete: if isOwner(userId) && isValidId(fileId);
+      }
+
+      match /payment_submissions/{submissionId} {
+        allow get: if (isOwner(userId) || isAdmin()) && isValidId(submissionId);
+        allow list: if isOwner(userId) || isAdmin();
+        allow create: if isOwner(userId) &&
+                         isValidId(submissionId) &&
+                         incoming().userId == request.auth.uid &&
+                         incoming().keys().hasAll(['userId', 'targetPlan', 'billingCycle', 'amountEgp', 'walletNumber', 'senderWalletType', 'receiptSelected', 'status', 'createdAt', 'updatedAt']) &&
+                         incoming().keys().hasOnly(['userId', 'targetPlan', 'billingCycle', 'amountEgp', 'walletNumber', 'senderWalletType', 'txReference', 'receiptSelected', 'receiptUriNote', 'status', 'createdAt', 'updatedAt']) &&
+                         incoming().status == 'PENDING' &&
+                         isValidPaymentSubmission(incoming());
+        allow update: if isAdmin() &&
+                         isValidId(submissionId) &&
+                         incoming().userId == existing().userId &&
+                         incoming().createdAt == existing().createdAt &&
+                         incoming().diff(existing()).affectedKeys().hasOnly(['status', 'updatedAt']) &&
+                         incoming().status in ['PENDING', 'APPROVED', 'REJECTED', 'CONFIRMED'];
+        allow delete: if false;
+      }
+
+      match /affiliate_logs/{logId} {
+        allow get: if isOwner(userId) && isValidId(logId);
+        allow list: if isOwner(userId);
+        allow create: if isOwner(userId) &&
+                         isValidId(logId) &&
+                         incoming().keys().hasAll(['userId', 'actionType', 'referenceTitle', 'offerPriceEgp', 'platformCommissionEgp', 'earnedCoins', 'createdAt', 'updatedAt']) &&
+                         incoming().keys().hasOnly(['userId', 'actionType', 'referenceTitle', 'offerPriceEgp', 'platformCommissionEgp', 'earnedCoins', 'createdAt', 'updatedAt']) &&
+                         isValidAffiliateLog(incoming());
+        allow update: if false;
+        allow delete: if false;
+      }
+    }
+
+    match /vip_requests/{requestId} {
+      allow get: if isValidId(requestId) && (isAdmin() || (isSignedIn() && existing().userId == request.auth.uid));
+      allow list: if isAdmin() || (isSignedIn() && existing().userId == request.auth.uid);
+      allow create: if isSignedIn() &&
+                       isValidId(requestId) &&
+                       incoming().userId == request.auth.uid &&
+                       incoming().status == 'PENDING' &&
+                       incoming().keys().hasAll(['userId', 'userName', 'targetPlan', 'billingCycle', 'amountEgp', 'walletNumber', 'senderWalletType', 'receiptSelected', 'status', 'createdAt', 'updatedAt']) &&
+                       incoming().keys().hasOnly(['userId', 'userName', 'userEmail', 'targetPlan', 'billingCycle', 'amountEgp', 'walletNumber', 'senderWalletType', 'txReference', 'receiptSelected', 'receiptUriNote', 'status', 'createdAt', 'updatedAt']) &&
+                       isValidVipRequest(incoming());
+      allow update: if isAdmin() &&
+                       isValidId(requestId) &&
+                       incoming().userId == existing().userId &&
+                       incoming().createdAt == existing().createdAt &&
+                       incoming().diff(existing()).affectedKeys().hasOnly(['status', 'updatedAt']) &&
+                       incoming().status in ['PENDING', 'APPROVED', 'REJECTED'];
+      allow delete: if isAdmin() && isValidId(requestId);
+    }
+
+    match /listings/{listingId} {
+      allow get: if isSignedIn() && isValidId(listingId) && (existing().status == 'ACTIVE' || existing().userId == request.auth.uid || isAdmin());
+      allow list: if isSignedIn() && (existing().status == 'ACTIVE' || existing().userId == request.auth.uid || isAdmin());
+      allow create: if isSignedIn() &&
+                       isValidId(listingId) &&
+                       incoming().userId == request.auth.uid &&
+                       incoming().keys().hasAll(['userId', 'sellerName', 'title', 'description', 'category', 'priceEgp', 'location', 'featured', 'verifiedSeller', 'status', 'createdAt', 'updatedAt']) &&
+                       incoming().keys().hasOnly(['userId', 'sellerName', 'title', 'description', 'category', 'priceEgp', 'location', 'featured', 'verifiedSeller', 'whatsappPhone', 'socialUrl', 'status', 'createdAt', 'updatedAt']) &&
+                       isValidListing(incoming());
+      allow update: if isSignedIn() &&
+                       isValidId(listingId) &&
+                       isValidListing(incoming()) &&
+                       incoming().userId == existing().userId &&
+                       incoming().createdAt == existing().createdAt &&
+                       (
+                         (existing().userId == request.auth.uid &&
+                           incoming().diff(existing()).affectedKeys().hasOnly(['title', 'description', 'category', 'priceEgp', 'location', 'featured', 'verifiedSeller', 'whatsappPhone', 'socialUrl', 'status', 'updatedAt'])) ||
+                         (isAdmin() &&
+                           incoming().diff(existing()).affectedKeys().hasOnly(['verifiedSeller', 'featured', 'status', 'updatedAt']))
+                       );
+      allow delete: if isSignedIn() && isValidId(listingId) && (existing().userId == request.auth.uid || isAdmin());
+
+      match /reviews/{reviewId} {
+        allow get, list: if isSignedIn();
+        allow create: if isSignedIn() &&
+                         reviewId == request.auth.uid &&
+                         isValidId(reviewId) &&
+                         incoming().listingId == listingId &&
+                         incoming().keys().hasAll(['listingId', 'userId', 'reviewerName', 'rating', 'comment', 'createdAt', 'updatedAt']) &&
+                         incoming().keys().hasOnly(['listingId', 'userId', 'reviewerName', 'rating', 'comment', 'createdAt', 'updatedAt']) &&
+                         isValidListingReview(incoming());
+        allow update: if isSignedIn() &&
+                         reviewId == request.auth.uid &&
+                         isValidId(reviewId) &&
+                         isValidListingReview(incoming()) &&
+                         incoming().userId == existing().userId &&
+                         incoming().listingId == existing().listingId &&
+                         incoming().createdAt == existing().createdAt &&
+                         incoming().diff(existing()).affectedKeys().hasOnly(['reviewerName', 'rating', 'comment', 'updatedAt']);
+        allow delete: if isSignedIn() && reviewId == request.auth.uid;
+      }
+    }
+
+    match /concierge_requests/{requestId} {
+      allow get: if isSignedIn() && isValidId(requestId) && (existing().status == 'OPEN' || existing().userId == request.auth.uid);
+      allow list: if isSignedIn() && (existing().status == 'OPEN' || existing().userId == request.auth.uid);
+      allow create: if isSignedIn() &&
+                       isValidId(requestId) &&
+                       incoming().status == 'OPEN' &&
+                       incoming().keys().hasAll(['userId', 'requesterName', 'category', 'title', 'details', 'budgetEgp', 'city', 'status', 'createdAt', 'updatedAt']) &&
+                       incoming().keys().hasOnly(['userId', 'requesterName', 'category', 'title', 'details', 'budgetEgp', 'city', 'status', 'createdAt', 'updatedAt']) &&
+                       isValidConciergeRequest(incoming());
+      allow update: if isSignedIn() &&
+                       isValidId(requestId) &&
+                       existing().userId == request.auth.uid &&
+                       isValidConciergeRequest(incoming()) &&
+                       incoming().userId == existing().userId &&
+                       incoming().createdAt == existing().createdAt &&
+                       incoming().diff(existing()).affectedKeys().hasOnly(['title', 'details', 'budgetEgp', 'city', 'status', 'updatedAt']);
+      allow delete: if isSignedIn() && isValidId(requestId) && existing().userId == request.auth.uid;
+
+      match /offers/{offerId} {
+        allow get: if isSignedIn() && isValidId(offerId) && (existing().merchantUserId == request.auth.uid || existing().requesterUid == request.auth.uid);
+        allow list: if isSignedIn() && (existing().merchantUserId == request.auth.uid || existing().requesterUid == request.auth.uid);
+        allow create: if isSignedIn() &&
+                         isValidId(offerId) &&
+                         incoming().keys().hasAll(['requestId', 'requesterUid', 'merchantUserId', 'merchantName', 'priceEgp', 'proposal', 'createdAt', 'updatedAt']) &&
+                         incoming().keys().hasOnly(['requestId', 'requesterUid', 'merchantUserId', 'merchantName', 'priceEgp', 'proposal', 'whatsappPhone', 'createdAt', 'updatedAt']) &&
+                         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.plan == 'BUSINESS_VIP' &&
+                         isValidConciergeOffer(incoming(), requestId);
+        allow update: if false;
+        allow delete: if isSignedIn() && isValidId(offerId) && existing().merchantUserId == request.auth.uid;
+      }
+    }
+
+    match /coupons/{couponId} {
+      allow get: if isSignedIn() && isValidId(couponId) && (existing().status == 'ACTIVE' || existing().userId == request.auth.uid);
+      allow list: if isSignedIn() && (existing().status == 'ACTIVE' || existing().userId == request.auth.uid);
+      allow create: if isSignedIn() &&
+                       isValidId(couponId) &&
+                       incoming().keys().hasAll(['userId', 'merchantName', 'code', 'title', 'discountPercent', 'city', 'status', 'createdAt', 'updatedAt']) &&
+                       incoming().keys().hasOnly(['userId', 'merchantName', 'code', 'title', 'discountPercent', 'city', 'status', 'createdAt', 'updatedAt']) &&
+                       isValidCoupon(incoming());
+      allow update: if isSignedIn() &&
+                       isValidId(couponId) &&
+                       existing().userId == request.auth.uid &&
+                       isValidCoupon(incoming()) &&
+                       incoming().userId == existing().userId &&
+                       incoming().createdAt == existing().createdAt &&
+                       incoming().diff(existing()).affectedKeys().hasOnly(['title', 'discountPercent', 'city', 'status', 'updatedAt']);
+      allow delete: if isSignedIn() && isValidId(couponId) && existing().userId == request.auth.uid;
+    }
+
+    match /talents/{talentId} {
+      allow get: if isSignedIn() && isValidId(talentId) && (existing().status == 'PUBLISHED' || existing().userId == request.auth.uid);
+      allow list: if isSignedIn() && (existing().status == 'PUBLISHED' || existing().userId == request.auth.uid);
+      allow create: if isSignedIn() &&
+                       isValidId(talentId) &&
+                       incoming().keys().hasAll(['userId', 'creatorName', 'talentTitle', 'category', 'bio', 'youtubeUrl', 'status', 'createdAt', 'updatedAt']) &&
+                       incoming().keys().hasOnly(['userId', 'creatorName', 'talentTitle', 'category', 'bio', 'youtubeUrl', 'socialUrl', 'status', 'createdAt', 'updatedAt']) &&
+                       isValidTalent(incoming());
+      allow update: if isSignedIn() &&
+                       isValidId(talentId) &&
+                       existing().userId == request.auth.uid &&
+                       isValidTalent(incoming()) &&
+                       incoming().userId == existing().userId &&
+                       incoming().createdAt == existing().createdAt &&
+                       incoming().diff(existing()).affectedKeys().hasOnly(['talentTitle', 'category', 'bio', 'youtubeUrl', 'socialUrl', 'status', 'updatedAt']);
+      allow delete: if isSignedIn() && isValidId(talentId) && existing().userId == request.auth.uid;
+    }
+  }
+}

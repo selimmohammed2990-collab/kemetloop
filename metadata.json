@@ -1,0 +1,8 @@
+{
+  "name": "KemetLoop",
+  "description": "Smart Egyptian marketplace, travel & affiliate hub with AI multilingual voice translator, edutainment & talents showcase, VIP subscriptions, and Vodafone Cash confirmation.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

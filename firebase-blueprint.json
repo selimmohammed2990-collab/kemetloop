@@ -1,0 +1,238 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "Authenticated user profile, coin wallet, affiliate stats, and VIP subscription state.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "displayName": { "type": "string" },
+        "email": { "type": "string" },
+        "plan": { "type": "string", "enum": ["FREE_STARTER", "PRO", "BUSINESS_VIP"] },
+        "billingCycle": { "type": "string", "enum": ["NONE", "MONTHLY", "YEARLY"] },
+        "coins": { "type": "integer" },
+        "referralCode": { "type": "string" },
+        "referredBy": { "type": "string" },
+        "referralCount": { "type": "integer" },
+        "affiliateEarningsCoins": { "type": "integer" },
+        "verifiedBusiness": { "type": "boolean" },
+        "dailyTranslationsUsed": { "type": "integer" },
+        "quizWins": { "type": "integer" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "displayName", "plan", "billingCycle", "coins", "referralCode", "verifiedBusiness", "createdAt", "updatedAt"]
+    },
+    "SavedLink": {
+      "title": "SavedLink",
+      "description": "Personal Dream/Link box entry stored under a user profile.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "title": { "type": "string" },
+        "url": { "type": "string" },
+        "category": { "type": "string", "enum": ["TRAVEL", "SHOP", "SOCIAL", "OTHER"] },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "title", "url", "category", "createdAt", "updatedAt"]
+    },
+    "PaymentSubmission": {
+      "title": "PaymentSubmission",
+      "description": "User payment submission log.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "targetPlan": { "type": "string", "enum": ["PRO", "BUSINESS_VIP"] },
+        "billingCycle": { "type": "string", "enum": ["MONTHLY", "YEARLY"] },
+        "amountEgp": { "type": "integer" },
+        "walletNumber": { "type": "string" },
+        "senderWalletType": { "type": "string", "enum": ["VODAFONE_CASH", "ORANGE_CASH", "ETISALAT_CASH", "WE_PAY", "INSTAPAY", "EGYPT_BANK_APP", "VISA_MASTERCARD", "PAYPAL", "PAYONEER", "INTL_BANK_TRANSFER"] },
+        "txReference": { "type": "string" },
+        "receiptSelected": { "type": "boolean" },
+        "receiptUriNote": { "type": "string" },
+        "status": { "type": "string", "enum": ["CONFIRMED", "PENDING", "APPROVED", "REJECTED"] },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "targetPlan", "billingCycle", "amountEgp", "walletNumber", "senderWalletType", "receiptSelected", "status", "createdAt", "updatedAt"]
+    },
+    "VipPaymentRequest": {
+      "title": "VipPaymentRequest",
+      "description": "Top-level Vodafone Cash VIP payment request reviewed in the Developer Admin Panel.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "userName": { "type": "string" },
+        "userEmail": { "type": "string" },
+        "targetPlan": { "type": "string", "enum": ["PRO", "BUSINESS_VIP"] },
+        "billingCycle": { "type": "string", "enum": ["MONTHLY", "YEARLY"] },
+        "amountEgp": { "type": "integer" },
+        "walletNumber": { "type": "string" },
+        "senderWalletType": { "type": "string", "enum": ["VODAFONE_CASH", "ORANGE_CASH", "ETISALAT_CASH", "WE_PAY", "INSTAPAY", "EGYPT_BANK_APP", "VISA_MASTERCARD", "PAYPAL", "PAYONEER", "INTL_BANK_TRANSFER"] },
+        "txReference": { "type": "string" },
+        "receiptSelected": { "type": "boolean" },
+        "receiptUriNote": { "type": "string" },
+        "status": { "type": "string", "enum": ["PENDING", "APPROVED", "REJECTED"] },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "userName", "targetPlan", "billingCycle", "amountEgp", "walletNumber", "senderWalletType", "receiptSelected", "status", "createdAt", "updatedAt"]
+    },
+    "AffiliateLog": {
+      "title": "AffiliateLog",
+      "description": "Affiliate share or invite reward record with 10% platform commission calculation.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "actionType": { "type": "string", "enum": ["SHARE_OFFER", "INVITE_FRIEND"] },
+        "referenceTitle": { "type": "string" },
+        "offerPriceEgp": { "type": "integer" },
+        "platformCommissionEgp": { "type": "integer" },
+        "earnedCoins": { "type": "integer" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "actionType", "referenceTitle", "offerPriceEgp", "platformCommissionEgp", "earnedCoins", "createdAt", "updatedAt"]
+    },
+    "MarketplaceListing": {
+      "title": "MarketplaceListing",
+      "description": "Product, trip, or service listing in the KemetLoop marketplace.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "sellerName": { "type": "string" },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "category": { "type": "string", "enum": ["PRODUCT", "TRIP", "SERVICE"] },
+        "priceEgp": { "type": "integer" },
+        "location": { "type": "string" },
+        "featured": { "type": "boolean" },
+        "verifiedSeller": { "type": "boolean" },
+        "whatsappPhone": { "type": "string" },
+        "socialUrl": { "type": "string" },
+        "status": { "type": "string", "enum": ["ACTIVE", "PAUSED"] },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "sellerName", "title", "description", "category", "priceEgp", "location", "featured", "verifiedSeller", "status", "createdAt", "updatedAt"]
+    },
+    "ListingReview": {
+      "title": "ListingReview",
+      "description": "5-star rating and review for a marketplace listing or business.",
+      "type": "object",
+      "properties": {
+        "listingId": { "type": "string" },
+        "userId": { "type": "string" },
+        "reviewerName": { "type": "string" },
+        "rating": { "type": "integer" },
+        "comment": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["listingId", "userId", "reviewerName", "rating", "comment", "createdAt", "updatedAt"]
+    },
+    "ConciergeRequest": {
+      "title": "ConciergeRequest",
+      "description": "Custom traveler/buyer request visible to Business VIP merchants for custom offers.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "requesterName": { "type": "string" },
+        "category": { "type": "string", "enum": ["PRODUCT", "TRIP", "SERVICE"] },
+        "title": { "type": "string" },
+        "details": { "type": "string" },
+        "budgetEgp": { "type": "integer" },
+        "city": { "type": "string" },
+        "status": { "type": "string", "enum": ["OPEN", "FULFILLED"] },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "requesterName", "category", "title", "details", "budgetEgp", "city", "status", "createdAt", "updatedAt"]
+    },
+    "ConciergeOffer": {
+      "title": "ConciergeOffer",
+      "description": "Offer submitted by a Business VIP merchant in response to a ConciergeRequest.",
+      "type": "object",
+      "properties": {
+        "requestId": { "type": "string" },
+        "requesterUid": { "type": "string" },
+        "merchantUserId": { "type": "string" },
+        "merchantName": { "type": "string" },
+        "priceEgp": { "type": "integer" },
+        "proposal": { "type": "string" },
+        "whatsappPhone": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["requestId", "requesterUid", "merchantUserId", "merchantName", "priceEgp", "proposal", "createdAt", "updatedAt"]
+    },
+    "DiscountCoupon": {
+      "title": "DiscountCoupon",
+      "description": "Scannable QR discount coupon created by merchants/travel deals.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "merchantName": { "type": "string" },
+        "code": { "type": "string" },
+        "title": { "type": "string" },
+        "discountPercent": { "type": "integer" },
+        "city": { "type": "string" },
+        "status": { "type": "string", "enum": ["ACTIVE", "PAUSED"] },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "merchantName", "code", "title", "discountPercent", "city", "status", "createdAt", "updatedAt"]
+    },
+    "TalentShowcase": {
+      "title": "TalentShowcase",
+      "description": "Creative talent entry with YouTube and social media links.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "creatorName": { "type": "string" },
+        "talentTitle": { "type": "string" },
+        "category": { "type": "string", "enum": ["MUSIC", "ART", "CRAFT", "STORY", "TECH"] },
+        "bio": { "type": "string" },
+        "youtubeUrl": { "type": "string" },
+        "socialUrl": { "type": "string" },
+        "status": { "type": "string", "enum": ["PUBLISHED", "HIDDEN"] },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "creatorName", "talentTitle", "category", "bio", "youtubeUrl", "status", "createdAt", "updatedAt"]
+    },
+    "VaultFileDocument": {
+      "title": "VaultFileDocument",
+      "description": "Cloud-synced user vault document metadata and compact inline backup under a user profile.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "title": { "type": "string" },
+        "fileName": { "type": "string" },
+        "mimeType": { "type": "string" },
+        "category": { "type": "string", "enum": ["TRAVEL_TICKETS", "ID_DOCS", "INVOICES_RECEIPTS", "MEDIA_FILES"] },
+        "sizeBytes": { "type": "integer" },
+        "note": { "type": "string" },
+        "inlineDataBase64": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "title", "fileName", "mimeType", "category", "sizeBytes", "createdAt", "updatedAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": { "schema": { "$ref": "#/entities/UserProfile" } },
+    "/users/{userId}/saved_links/{linkId}": { "schema": { "$ref": "#/entities/SavedLink" } },
+    "/users/{userId}/vault_files/{fileId}": { "schema": { "$ref": "#/entities/VaultFileDocument" } },
+    "/users/{userId}/payment_submissions/{submissionId}": { "schema": { "$ref": "#/entities/PaymentSubmission" } },
+    "/users/{userId}/affiliate_logs/{logId}": { "schema": { "$ref": "#/entities/AffiliateLog" } },
+    "/vip_requests/{requestId}": { "schema": { "$ref": "#/entities/VipPaymentRequest" } },
+    "/listings/{listingId}": { "schema": { "$ref": "#/entities/MarketplaceListing" } },
+    "/listings/{listingId}/reviews/{reviewId}": { "schema": { "$ref": "#/entities/ListingReview" } },
+    "/concierge_requests/{requestId}": { "schema": { "$ref": "#/entities/ConciergeRequest" } },
+    "/concierge_requests/{requestId}/offers/{offerId}": { "schema": { "$ref": "#/entities/ConciergeOffer" } },
+    "/coupons/{couponId}": { "schema": { "$ref": "#/entities/DiscountCoupon" } },
+    "/talents/{talentId}": { "schema": { "$ref": "#/entities/TalentShowcase" } }
+  }
+}
